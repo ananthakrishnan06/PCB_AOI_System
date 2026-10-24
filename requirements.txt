@@ -1,0 +1,6 @@
+Flask>=3.1,<4
+ultralytics
+opencv-python
+Pillow
+PyYAML
+customtkinter

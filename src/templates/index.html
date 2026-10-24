@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>PCB Defect Detection System</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-secondary": "#003640",
+            "on-tertiary": "#003824",
+            "on-primary-fixed": "#001a42",
+            "on-error-container": "#ffdad6",
+            "surface-variant": "#31353c",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "primary-fixed": "#d8e2ff",
+            "primary-container": "#4d8eff",
+            "surface-dim": "#10141a",
+            "surface-bright": "#353940",
+            "on-surface": "#dfe2eb",
+            "tertiary-fixed": "#6ffbbe",
+            "on-secondary-container": "#00424e",
+            "surface-tint": "#adc6ff",
+            "secondary-container": "#03b5d3",
+            "on-tertiary-container": "#00311f",
+            "tertiary": "#4edea3",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-surface-variant": "#c2c6d6",
+            "error-container": "#93000a",
+            "secondary-fixed": "#acedff",
+            "background": "#10141a",
+            "outline-variant": "#424754",
+            "surface-container-highest": "#31353c",
+            "surface-container-low": "#181c22",
+            "outline": "#8c909f",
+            "on-primary-fixed-variant": "#004395",
+            "on-background": "#dfe2eb",
+            "secondary-fixed-dim": "#4cd7f6",
+            "surface-container": "#1c2026",
+            "inverse-surface": "#dfe2eb",
+            "secondary": "#4cd7f6",
+            "on-primary": "#002e6a",
+            "surface-container-high": "#262a31",
+            "surface-container-lowest": "#0a0e14",
+            "on-tertiary-fixed-variant": "#005236",
+            "inverse-on-surface": "#2d3137",
+            "tertiary-container": "#00a572",
+            "primary-fixed-dim": "#adc6ff",
+            "on-secondary-fixed": "#001f26",
+            "inverse-primary": "#005ac2",
+            "primary": "#adc6ff",
+            "surface": "#10141a",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-tertiary-fixed": "#002113",
+            "on-primary-container": "#00285d"
+          },
+          fontFamily: {
+            "label-code": ["JetBrains Mono", "monospace"],
+            "data-metric-xl": ["JetBrains Mono", "monospace"],
+            "data-metric-lg": ["JetBrains Mono", "monospace"],
+            "display-lg": ["Inter", "sans-serif"],
+            "data-metric-sm": ["JetBrains Mono", "monospace"],
+            "body-sm": ["Inter", "sans-serif"],
+            "label-caps": ["JetBrains Mono", "monospace"],
+            "body-lg": ["Inter", "sans-serif"],
+            "headline-sm": ["Inter", "sans-serif"],
+            "headline-md": ["Inter", "sans-serif"],
+            "headline-lg": ["Inter", "sans-serif"],
+            "body-md": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .optical-grid {
+      background-image: linear-gradient(to right, rgba(76, 215, 246, 0.05) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(76, 215, 246, 0.05) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .custom-range::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background: #4cd7f6;
+      cursor: pointer;
+      border: 1px solid #003640;
+    }
+    .custom-range::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      background: #4cd7f6;
+      cursor: pointer;
+      border: 1px solid #003640;
+    }
+    img:not([src]), img[src=""] { display: none !important; }
+    .light-ui body { background: #eef3f8 !important; color: #172033 !important; }
+    .light-ui .bg-surface-container-lowest { background-color: #ffffff !important; }
+    .light-ui .bg-surface { background-color: #eef3f8 !important; }
+    .light-ui .bg-surface-container-low { background-color: #f8fafc !important; }
+    .light-ui .bg-surface-container { background-color: #ffffff !important; }
+    .light-ui .bg-surface-container-high { background-color: #edf2f7 !important; }
+    .light-ui .bg-surface-container-highest, .light-ui .bg-surface-variant { background-color: #dfe7f0 !important; }
+    .light-ui .text-on-surface { color: #172033 !important; }
+    .light-ui .text-on-surface-variant, .light-ui .text-outline { color: #526176 !important; }
+    .light-ui .text-primary { color: #075985 !important; }
+    .light-ui .text-secondary { color: #0e7490 !important; }
+    .light-ui .text-tertiary { color: #047857 !important; }
+    .light-ui .text-error { color: #b42318 !important; }
+    .light-ui .border-outline-variant { border-color: #c5d0dd !important; }
+    .light-ui .bg-primary-container { background-color: #2563eb !important; }
+    .light-ui .bg-error-container { background-color: #fee4e2 !important; }
+  </style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased overflow-hidden select-none font-body-md text-body-md h-screen w-screen flex flex-col">
+
+<!-- Top Header Bar -->
+<header class="bg-surface-container top-0 h-11 border-b border-outline-variant flex justify-between items-center w-full px-space-md shrink-0 z-30">
+  <div class="flex items-center space-x-3">
+    <span class="material-symbols-outlined text-primary text-[22px]">view_in_ar</span>
+    <div class="flex flex-col">
+      <span class="font-headline-sm text-[13px] font-bold text-on-surface uppercase tracking-tight leading-none">PCB DEFECT DETECTION SYSTEM</span>
+      <span class="font-label-caps text-[9px] text-on-surface-variant uppercase leading-none mt-0.5">AUTOMATED OPTICAL INSPECTION</span>
+    </div>
+    <div class="h-4 w-px bg-outline-variant mx-1"></div>
+    <span class="hidden sm:inline-block font-label-caps text-[10px] text-on-surface-variant uppercase px-1.5 py-0.5 bg-surface-container-high rounded">AI INSPECTION CONSOLE</span>
+  </div>
+
+  <!-- Right Instrumentation -->
+  <div class="flex items-center space-x-2 font-label-code text-xs">
+    <div class="flex items-center bg-surface-container-high border border-outline-variant rounded px-2 py-0.5 space-x-1.5">
+      <span class="material-symbols-outlined text-primary text-[14px]">memory</span>
+      <span class="font-label-caps text-[10px] text-on-surface uppercase">YOLOv11 • best.pt</span>
+    </div>
+    <div class="flex items-center bg-surface-container-high border border-outline-variant rounded px-2 py-0.5 space-x-1.5">
+      <span class="inline-block w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#4edea3] animate-pulse"></span>
+      <span class="font-label-caps text-[10px] text-tertiary uppercase font-bold tracking-wider">SYSTEM READY</span>
+    </div>
+    <button id="fullScreenButton" class="p-1 hover:bg-surface-container-highest rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Toggle Fullscreen">
+      <span class="material-symbols-outlined text-[18px]">fullscreen</span>
+    </button>
+    <div class="h-4 w-px bg-outline-variant"></div>
+    <div class="flex items-center space-x-1.5 bg-surface-container-high px-2 py-0.5 rounded border border-outline-variant">
+      <span class="material-symbols-outlined text-primary text-[15px]">badge</span>
+      <span class="font-label-code text-[11px] text-on-surface font-medium">Station 04</span>
+    </div>
+  </div>
+</header>
+
+<!-- Main Workspace with Sidebar -->
+<div class="flex flex-1 overflow-hidden relative">
+
+  <!-- Left Navigation Rail -->
+  <nav class="bg-surface-container-lowest border-r border-outline-variant h-full w-14 lg:w-48 shrink-0 flex flex-col justify-between py-2 px-1.5 z-20">
+    <div class="flex flex-col space-y-1">
+      <a class="border-l-2 border-primary text-primary font-bold bg-surface-container-high flex items-center space-x-2 px-2.5 py-2 rounded-r transition-colors" href="#inspect">
+        <span class="material-symbols-outlined text-[20px]">view_in_ar</span>
+        <span class="hidden lg:inline font-label-caps text-[10px] uppercase tracking-wider">Inspection</span>
+      </a>
+      <a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high flex items-center space-x-2 px-2.5 py-2 rounded-r transition-colors" href="#history">
+        <span class="material-symbols-outlined text-[20px]">history</span>
+        <span class="hidden lg:inline font-label-caps text-[10px] uppercase tracking-wider">Scan History</span>
+      </a>
+      <a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high flex items-center space-x-2 px-2.5 py-2 rounded-r transition-colors" href="#settings">
+        <span class="material-symbols-outlined text-[20px]">settings</span>
+        <span class="hidden lg:inline font-label-caps text-[10px] uppercase tracking-wider">Settings</span>
+      </a>
+      <a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high flex items-center space-x-2 px-2.5 py-2 rounded-r transition-colors" href="#docs">
+        <span class="material-symbols-outlined text-[20px]">help</span>
+        <span class="hidden lg:inline font-label-caps text-[10px] uppercase tracking-wider">Docs</span>
+      </a>
+    </div>
+
+    <!-- Cycle Stop Button -->
+    <div class="pt-2 border-t border-outline-variant">
+      <button id="cycleStopButton" class="w-full py-2 px-1 bg-error-container hover:bg-red-700 text-on-error border border-error rounded flex items-center justify-center space-x-1 transition-all shadow-sm active:scale-95">
+        <span class="material-symbols-outlined text-[16px]">dangerous</span>
+        <span class="hidden lg:inline font-label-caps text-[10px] font-bold tracking-widest uppercase">CYCLE STOP</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Core Content Area -->
+  <main class="flex-1 flex flex-col bg-surface overflow-y-auto overflow-x-hidden min-w-0">
+
+    <!-- Action Toolbar -->
+    <div class="bg-surface-container-low border-b border-outline-variant px-space-md py-1.5 flex flex-wrap items-center justify-between gap-2 shrink-0">
+      <div class="flex items-center space-x-2">
+        <button id="inspectButton" class="h-8 px-3.5 bg-primary-container hover:bg-blue-600 text-white rounded flex items-center space-x-1.5 font-label-code text-[11px] font-bold tracking-wide transition-all shadow-[0_0_12px_rgba(77,142,255,0.35)] active:translate-y-0.5">
+          <span class="material-symbols-outlined text-[16px]">bolt</span>
+          <span>TRIGGER SCAN</span>
+        </button>
+        <button id="browseButton" class="h-8 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface rounded flex items-center space-x-1.5 font-label-code text-[11px] transition-colors">
+          <span class="material-symbols-outlined text-[16px]">file_upload</span>
+          <span>Browse Image</span>
+        </button>
+        <button id="liveFeedButton" class="h-8 px-3 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-secondary rounded flex items-center space-x-1.5 font-label-code text-[11px] transition-colors">
+          <span class="material-symbols-outlined text-[16px] text-tertiary">videocam</span>
+          <span>Live Feed</span>
+          <span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
+        </button>
+        <button id="resetButton" class="h-8 px-2.5 bg-surface-container hover:bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface rounded flex items-center transition-colors" title="Reset Workspace">
+          <span class="material-symbols-outlined text-[16px]">refresh</span>
+        </button>
+      </div>
+
+      <!-- Confidence Cutoff -->
+      <div class="flex items-center space-x-2 bg-surface-container px-2.5 py-1 rounded border border-outline-variant">
+        <span class="font-label-caps text-[10px] text-on-surface-variant uppercase">CONFIDENCE CUTOFF:</span>
+        <input id="confidenceInput" class="custom-range w-24 h-1 bg-surface-variant rounded appearance-none cursor-pointer" max="100" min="1" type="range" value="25"/>
+        <span id="confidenceValue" class="font-label-code text-[11px] text-secondary font-bold w-7 text-right">25%</span>
+      </div>
+    </div>
+
+    <!-- Dual Viewport Grid -->
+    <div class="p-space-sm grid grid-cols-1 xl:grid-cols-2 gap-space-sm flex-1 min-h-[440px]">
+
+      <!-- Left Card: Original PCB Input -->
+      <div class="bg-surface-container-low border border-outline-variant rounded-lg flex flex-col overflow-hidden relative">
+        <div class="h-8 bg-surface-container px-space-md border-b border-outline-variant flex items-center justify-between shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-secondary"></span>
+            <span class="font-label-caps text-[10px] text-on-surface uppercase tracking-wider font-bold">ORIGINAL PCB IMAGE [OPTICAL RAW]</span>
+          </div>
+          <span class="bg-surface-container-high px-1.5 py-0.5 rounded text-[10px] text-secondary font-label-code">RAW FEED</span>
+        </div>
+        <div class="relative flex-1 bg-surface-container-lowest overflow-hidden optical-grid flex items-center justify-center p-1">
+          <img id="originalImage" alt="Selected PCB optical input" class="w-full h-full object-contain filter contrast-105 select-none pointer-events-none"/>
+          <div class="absolute inset-0 pointer-events-none">
+            <div class="absolute left-1/2 top-0 bottom-0 w-px bg-secondary opacity-25"></div>
+            <div class="absolute top-1/2 left-0 right-0 h-px bg-secondary opacity-25"></div>
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border border-secondary/30 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Card: AI Inspection Result -->
+      <div class="bg-surface-container-low border border-outline-variant rounded-lg flex flex-col overflow-hidden relative">
+        <div class="h-8 bg-surface-container px-space-md border-b border-outline-variant flex items-center justify-between shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-tertiary"></span>
+            <span class="font-label-caps text-[10px] text-on-surface uppercase tracking-wider font-bold">INSPECTION RESULT [AI INFERENCE]</span>
+          </div>
+        </div>
+        <div class="relative flex-1 bg-surface-container-lowest overflow-hidden optical-grid flex items-center justify-center p-1">
+          <img id="resultImage" alt="PCB inspection result" class="w-full h-full object-contain filter contrast-105 select-none pointer-events-none"/>
+          <div class="absolute top-2 right-2 bg-surface-container-lowest/80 border border-outline-variant px-2 py-0.5 rounded font-label-code text-[11px] text-on-surface z-20">
+            <span id="liveInference" class="text-tertiary">INFERENCE: STANDBY</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Diagnostics & Defect Table Bento -->
+    <div class="px-space-sm pb-space-sm grid grid-cols-1 xl:grid-cols-12 gap-space-sm shrink-0">
+
+      <!-- Left Diagnostic Card -->
+      <div class="xl:col-span-4 bg-surface-container-low border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between pb-1 border-b border-outline-variant mb-2">
+            <div class="flex items-center space-x-1.5">
+              <span class="material-symbols-outlined text-primary text-[18px]">analytics</span>
+              <span class="font-headline-sm text-xs font-bold text-on-surface">CLASSIFICATION METRICS</span>
+            </div>
+            <span class="font-label-caps text-[9px] text-on-surface-variant uppercase">PASS / FAIL</span>
+          </div>
+
+          <!-- Status Banner -->
+          <div id="statusCard" class="bg-surface-container border border-outline-variant rounded p-2.5 flex items-center justify-between mb-2.5">
+            <div class="flex items-center space-x-3">
+              <span id="resultStatus" class="font-data-metric-xl text-2xl font-bold text-tertiary tracking-tight">READY</span>
+              <div class="flex flex-col">
+                <span id="statusSubLabel" class="font-label-caps text-[10px] text-on-surface-variant font-bold tracking-wider">SELECT IMAGE OR LIVE FEED</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 Metrics -->
+          <div class="grid grid-cols-3 gap-2 mb-2.5">
+            <div class="bg-surface-container p-2 rounded border border-outline-variant flex flex-col">
+              <span class="font-label-caps text-[9px] text-on-surface-variant uppercase">TOTAL DEFECTS</span>
+              <span id="totalMetric" class="font-data-metric-lg text-lg font-bold text-on-surface">--</span>
+            </div>
+            <div class="bg-surface-container p-2 rounded border border-outline-variant flex flex-col">
+              <span class="font-label-caps text-[9px] text-on-surface-variant uppercase">PROCESS TIME</span>
+              <span id="timeMetric" class="font-data-metric-lg text-lg font-bold text-on-surface">--</span>
+            </div>
+            <div class="bg-surface-container p-2 rounded border border-outline-variant flex flex-col">
+              <span class="font-label-caps text-[9px] text-on-surface-variant uppercase">THRESHOLD</span>
+              <span id="thresholdMetric" class="font-data-metric-lg text-lg font-bold text-secondary">25%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 Taxonomy Counts -->
+        <div>
+          <span class="font-label-caps text-[9px] text-on-surface-variant uppercase block mb-1">DEFECT TAXONOMY COUNTS:</span>
+          <div class="grid grid-cols-3 gap-1.5 font-label-code text-[10px]">
+            <div class="bg-surface-container px-1.5 py-1 rounded border border-outline-variant flex justify-between text-on-surface-variant">
+              <span>Open Circuit</span>
+              <span class="font-bold">0</span>
+            </div>
+            <div class="bg-surface-container px-1.5 py-1 rounded border border-outline-variant flex justify-between text-on-surface-variant">
+              <span>Short Circuit</span>
+              <span class="font-bold">0</span>
+            </div>
+            <div class="bg-surface-container px-1.5 py-1 rounded border border-outline-variant flex justify-between text-on-surface-variant">
+              <span>Mouse Bite</span>
+              <span class="font-bold">0</span>
+            </div>
+            <div class="bg-surface-container px-1.5 py-1 rounded border border-outline-variant flex justify-between text-on-surface-variant">
+              <span>Spur</span>
+              <span class="font-bold">0</span>
+            </div>
+            <div class="bg-surface-container px-1.5 py-1 rounded border border-outline-variant flex justify-between text-on-surface-variant">
+              <span>Spurious Cu</span>
+              <span class="font-bold">0</span>
+            </div>
+            <div class="bg-surface-container px-1.5 py-1 rounded border border-outline-variant flex justify-between text-on-surface-variant">
+              <span>Missing Hole</span>
+              <span class="font-bold">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Defect Details Table -->
+      <div class="xl:col-span-8 bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+        <div class="h-8 bg-surface-container px-space-md border-b border-outline-variant flex items-center justify-between shrink-0">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-secondary text-[16px]">table_rows</span>
+            <span class="font-label-caps text-[10px] text-on-surface uppercase tracking-wider font-bold">DEFECT INCIDENT LEDGER</span>
+          </div>
+          <button id="exportButton" class="text-secondary hover:underline flex items-center space-x-1 font-label-code text-[11px]">
+            <span class="material-symbols-outlined text-[14px]">download</span>
+            <span>EXPORT CSV</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto flex-1">
+          <table class="w-full text-left border-collapse font-label-code text-xs">
+            <thead>
+              <tr class="bg-surface-container-lowest border-b border-outline-variant text-on-surface-variant font-label-caps text-[9px] uppercase">
+                <th class="py-1.5 px-3">ID</th>
+                <th class="py-1.5 px-3">DEFECT TYPE</th>
+                <th class="py-1.5 px-3">CONFIDENCE</th>
+                <th class="py-1.5 px-3">CENTER POSITION (X, Y)</th>
+                <th class="py-1.5 px-3">BBOX DIMS</th>
+                <th class="py-1.5 px-3 text-right">ACTION</th>
+              </tr>
+            </thead>
+            <tbody id="defectRows" class="divide-y divide-outline-variant">
+              <tr class="bg-surface-container-low">
+                <td class="py-6 px-3 text-on-surface-variant text-center" colspan="6">No inspection data available.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<!-- Bottom Status Footer -->
+<footer class="bg-surface-container-lowest text-on-surface-variant border-t border-outline-variant h-6 flex justify-between items-center w-full px-space-md shrink-0 z-30 font-label-code text-[10px] overflow-hidden">
+  <div class="flex items-center space-x-2 truncate">
+    <span class="inline-block w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+    <span class="text-tertiary font-bold">CAMERA: ONLINE (30 FPS)</span>
+    <span>•</span>
+    <span>MODEL: runs/detect/train-7/weights/best.pt</span>
+  </div>
+  <div class="flex items-center space-x-2 shrink-0">
+    <span>ACCELERATION: <strong class="text-secondary">CUDA FP16</strong></span>
+    <span>•</span>
+    <span class="text-primary font-bold">STATION: 04</span>
+  </div>
+</footer>
+
+<input id="imageInput" type="file" accept=".jpg,.jpeg,.png,.bmp,.webp,image/*" hidden>
+<script src="{{ url_for('static', filename='app.js') }}?v={{ range(1000, 9999) | random }}"></script>
+</body>
+</html>

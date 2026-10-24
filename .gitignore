@@ -1,0 +1,29 @@
+# Python & Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Large Dataset Raw Media (10,000+ images, 2.4 GB)
+# Keep dataset/data.yaml
+dataset/images/
+dataset/labels/
+
+# Output directory captures and temporary uploads
+output/*
+!output/.gitkeep
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# Large Backbone pre-training downloads (keep trained best.pt in runs/)
+yolo*.pt
+!runs/detect/train-7/weights/best.pt
